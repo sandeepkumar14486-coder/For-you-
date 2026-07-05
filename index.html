@@ -32,7 +32,6 @@
             box-shadow: 0 10px 30px rgba(255, 105, 180, 0.2);
             width: 90%;
             max-width: 600px;
-            position: relative;
         }
 
         h1 {
@@ -58,7 +57,7 @@
             cursor: pointer;
             margin-top: 20px;
             transition: 0.3s;
-            display: none; /* Hidden by default */
+            display: inline-block;
         }
 
         .btn:hover {
@@ -66,17 +65,17 @@
             transform: scale(1.05);
         }
 
-        /* Pages */
+        /* STRICTLY HIDING PAGES */
         .page {
-            display: none;
+            display: none; 
             animation: fadeIn 1s;
         }
 
+        /* ONLY ACTIVE PAGE WILL SHOW */
         .active-page {
-            display: block;
+            display: block !important;
         }
 
-        /* Timer Page */
         #timer {
             font-size: 2rem;
             font-weight: 600;
@@ -89,7 +88,6 @@
             background-size: cover;
         }
 
-        /* Music Page */
         .song-options {
             display: flex;
             flex-direction: column;
@@ -114,7 +112,6 @@
             border-color: #ff69b4;
         }
 
-        /* Message Page */
         #typewriter-text {
             font-size: 1rem;
             line-height: 1.6;
@@ -143,7 +140,7 @@
         <div id="unlock-screen" style="display: none;">
             <h1>Happy Birthday! 🎈</h1>
             <p>The wait is over...</p>
-            <button class="btn" id="open-btn" style="display: inline-block;">Open Sparkles ✨</button>
+            <button class="btn" id="open-btn">Open Sparkles ✨</button>
         </div>
     </div>
 
@@ -158,13 +155,12 @@
             <button class="song-btn" onclick="selectSong('sitaare', this)">3. Sitaare</button>
         </div>
 
-        <!-- Audio tags (Aap baad me apne MP3 files ka link yaha src mein daal dena) -->
         <audio id="tum_hi_ho" src="tum_hi_ho.mp3"></audio>
         <audio id="bhula_dena" src="bhula_dena.mp3"></audio>
         <audio id="sitaare" src="sitaare.mp3"></audio>
 
         <p id="wait-msg" style="display: none; color: #ff69b4; margin-top: 10px;">Feel the music...</p>
-        <button class="btn" id="next-to-msg-btn" onclick="goToMessage()">Next</button>
+        <button class="btn" id="next-to-msg-btn" onclick="goToMessage()" style="display: none;">Next</button>
     </div>
 
     <!-- PAGE 3: Final Message -->
@@ -176,7 +172,8 @@
 
     <script>
         // --- TIMER LOGIC ---
-        // Set to July 8, 2026, 00:00:00
+        // Maine ise wapas 2025 kar diya hai taaki tum testing kar sako.
+        // Jab testing complete ho jaye, toh ise 2026 zaroor kar dena!
         const countDownDate = new Date("July 8, 2025 00:00:00").getTime();
 
         const x = setInterval(function() {
@@ -191,19 +188,27 @@
 
                 document.getElementById("timer").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
             } else {
-                // Timer is finished
                 clearInterval(x);
                 document.getElementById("lock-screen").style.display = "none";
                 document.getElementById("unlock-screen").style.display = "block";
-                document.body.classList.add("sparkle-bg"); // Adds sparkle background
+                document.body.classList.add("sparkle-bg");
             }
         }, 1000);
 
-        // --- PAGE TRANSITION LOGIC ---
+        // --- STRICT PAGE TRANSITION LOGIC ---
+        // Yeh function ensure karega ki sirf ek hi page dikhe
+        function switchPage(hidePageId, showPageId) {
+            document.getElementById(hidePageId).style.display = "none";
+            document.getElementById(hidePageId).classList.remove("active-page");
+            
+            document.getElementById(showPageId).style.display = "block";
+            document.getElementById(showPageId).classList.add("active-page");
+        }
+
+        // Button 1 (Open Sparkles)
         document.getElementById("open-btn").addEventListener("click", () => {
-            document.body.classList.remove("sparkle-bg"); // Remove sparkles on next page to keep it clean
-            document.getElementById("page1").classList.remove("active-page");
-            document.getElementById("page2").classList.add("active-page");
+            document.body.classList.remove("sparkle-bg"); 
+            switchPage("page1", "page2"); // Page 1 band, Page 2 shuru
         });
 
         // --- MUSIC LOGIC ---
@@ -211,41 +216,34 @@
         let songSelected = false;
 
         function selectSong(audioId, btnElement) {
-            // Stop previous audio if playing
             if (currentAudio) {
                 currentAudio.pause();
                 currentAudio.currentTime = 0;
             }
 
-            // Remove selected class from all buttons
             let buttons = document.querySelectorAll('.song-btn');
             buttons.forEach(btn => btn.classList.remove('selected'));
 
-            // Highlight selected button
             btnElement.classList.add('selected');
             songSelected = true;
 
-            // Play new audio (Errors will show in console if MP3 files are missing, which is fine for now)
             currentAudio = document.getElementById(audioId);
-            currentAudio.play().catch(e => console.log("Audio file missing, link it later!"));
+            currentAudio.play().catch(e => console.log("Audio play error"));
 
-            // Show wait message, then show Next button after 2.5 seconds
             document.getElementById("wait-msg").style.display = "block";
             document.getElementById("next-to-msg-btn").style.display = "none";
             
             setTimeout(() => {
                 document.getElementById("wait-msg").style.display = "none";
                 document.getElementById("next-to-msg-btn").style.display = "inline-block";
-            }, 2500); // Wait for 2.5 seconds before allowing 'Next'
+            }, 2500);
         }
 
+        // Button 2 (Next after song)
         function goToMessage() {
-            if (!songSelected) return; // Guard clause
+            if (!songSelected) return;
 
-            document.getElementById("page2").classList.remove("active-page");
-            document.getElementById("page3").classList.add("active-page");
-            
-            // Start typewriter animation
+            switchPage("page2", "page3"); // Page 2 band, Page 3 shuru
             startTypewriter();
         }
 
@@ -253,7 +251,7 @@
         const messageText = "I know we are just friends, but while I am merely a friend to you, you were something much more to me. I am aware that there is someone else in your life, yet I still care for you; I don't know why I feel such a strong attraction to you. I try my best to stay out of your life, but you neither forget me nor let me forget you. Please do just one small thing for me: never message me—unless it is absolutely urgent, in which case I will always be available for you, because the heart always wins over the mind. Also, please never cross paths with me; I will never intrude into your life again. Perhaps I am just a friend to you, but please forget that friendship from this day forward. I am sorry for writing this.\n\nso start a new journey on this birthday. Happy birthday 🎈";
         
         let i = 0;
-        const speed = 40; // Typing speed in milliseconds
+        const speed = 40; 
 
         function startTypewriter() {
             if (i < messageText.length) {
